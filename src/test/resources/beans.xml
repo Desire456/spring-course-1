@@ -11,9 +11,17 @@
     <context:property-placeholder location="classpath:db.properties"/>
 
     <bean id="datasource" class="org.postgresql.ds.PGSimpleDataSource">
-        <property name="serverName" value="${db.serverName}"/>
+        <property name="serverNames">
+            <array value-type="java.lang.String">
+                <value>${db.serverName}</value>
+            </array>
+        </property>
         <property name="databaseName" value="${db.databaseName}"/>
-        <property name="portNumber" value="${db.port}"/>
+        <property name="portNumbers">
+            <array value-type="int">
+                <value>${db.port}</value>
+            </array>
+        </property>
         <property name="user" value="${db.username}"/>
         <property name="password" value="${db.password}"/>
     </bean>

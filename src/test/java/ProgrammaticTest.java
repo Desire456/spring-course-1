@@ -1,12 +1,11 @@
 import org.example.PostgresConnector;
 import org.example.programmatic.ProgrammaticPostgresConnector;
 import org.postgresql.ds.PGSimpleDataSource;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.ClassPathResource;
-
-import javax.sql.DataSource;
 
 public class ProgrammaticTest extends CommonTest {
     @Override
@@ -19,10 +18,11 @@ public class ProgrammaticTest extends CommonTest {
             return configurer;
         });
 
-        context.registerBean(PGSimpleDataSource.class, () -> {
+        context.registerBean("dataSource", PGSimpleDataSource.class, () -> {
             PropertySource<?> propertySource = context.getBean(PropertySourcesPlaceholderConfigurer.class)
                     .getAppliedPropertySources()
                     .get("localProperties");
+
             PGSimpleDataSource dataSource = new PGSimpleDataSource();
             dataSource.setServerNames(new String[]{(String) propertySource.getProperty("db.serverName")});
             dataSource.setDatabaseName((String) propertySource.getProperty("db.databaseName"));
@@ -32,10 +32,9 @@ public class ProgrammaticTest extends CommonTest {
             return dataSource;
         });
 
-        context.registerBean(ProgrammaticPostgresConnector.class, () -> {
-            DataSource dataSource = context.getBean(DataSource.class);
-            return new ProgrammaticPostgresConnector(dataSource);
-        });
+
+        context.registerBean(ProgrammaticPostgresConnector.class,
+                new RuntimeBeanReference("dataSource"));
 
         context.refresh();
 

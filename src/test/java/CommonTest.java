@@ -2,8 +2,7 @@ import org.example.PostgresConnector;
 import org.junit.jupiter.api.Test;
 import org.postgresql.ds.PGSimpleDataSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class CommonTest {
     protected abstract PostgresConnector getPostgresConnector();
@@ -15,8 +14,8 @@ public abstract class CommonTest {
 
         PGSimpleDataSource dataSource = (PGSimpleDataSource) connector.getDataSource();
         assertNotNull(dataSource);
-        assertEquals(dataSource.getServerNames()[0], "localhost");
-        assertEquals(dataSource.getPortNumbers()[0], 5432);
+        assertArrayEquals(dataSource.getServerNames(), new String[]{"localhost"});
+        assertArrayEquals(dataSource.getPortNumbers(), new int[]{5432});
         assertEquals(dataSource.getUser(), "root");
         assertEquals(dataSource.getPassword(), "root");
         assertEquals(dataSource.getDatabaseName(), "postgres");
