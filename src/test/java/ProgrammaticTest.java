@@ -4,8 +4,9 @@ import org.postgresql.ds.PGSimpleDataSource;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.ClassPathResource;
+
+import java.util.HashMap;
 
 public class ProgrammaticTest extends CommonTest {
     @Override
@@ -18,23 +19,20 @@ public class ProgrammaticTest extends CommonTest {
             return configurer;
         });
 
-        context.registerBean("dataSource", PGSimpleDataSource.class, () -> {
-            PropertySource<?> propertySource = context.getBean(PropertySourcesPlaceholderConfigurer.class)
-                    .getAppliedPropertySources()
-                    .get("localProperties");
+        context.registerBean("dataSource", PGSimpleDataSource.class,
+                beadDefinition -> beadDefinition.getPropertyValues().addPropertyValues(
+                        new HashMap<String, Object>() {
+                            {
+                                put("serverNames", "${db.serverName}");
+                                put("databaseName", "${db.databaseName}");
+                                put("portNumbers", "${db.port}");
+                                put("user", "${db.username}");
+                                put("password", "${db.password}");
+                            }
+                        }
+                ));
 
-            PGSimpleDataSource dataSource = new PGSimpleDataSource();
-            dataSource.setServerNames(new String[]{(String) propertySource.getProperty("db.serverName")});
-            dataSource.setDatabaseName((String) propertySource.getProperty("db.databaseName"));
-            dataSource.setPortNumbers(new int[]{Integer.parseInt((String) propertySource.getProperty("db.port"))});
-            dataSource.setUser((String) propertySource.getProperty("db.username"));
-            dataSource.setPassword((String) propertySource.getProperty("db.password"));
-            return dataSource;
-        });
-
-
-        context.registerBean(ProgrammaticPostgresConnector.class,
-                new RuntimeBeanReference("dataSource"));
+        context.registerBean(ProgrammaticPostgresConnector.class, new RuntimeBeanReference("dataSource"));
 
         context.refresh();
 
