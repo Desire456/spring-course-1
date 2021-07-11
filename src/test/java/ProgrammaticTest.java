@@ -7,6 +7,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class ProgrammaticTest extends CommonTest {
     @Override
@@ -20,22 +21,22 @@ public class ProgrammaticTest extends CommonTest {
         });
 
         context.registerBean("dataSource", PGSimpleDataSource.class,
-                beadDefinition -> beadDefinition.getPropertyValues().addPropertyValues(
-                        new HashMap<String, Object>() {
-                            {
-                                put("serverNames", "${db.serverName}");
-                                put("databaseName", "${db.databaseName}");
-                                put("portNumbers", "${db.port}");
-                                put("user", "${db.username}");
-                                put("password", "${db.password}");
-                            }
-                        }
-                ));
+                beadDefinition -> beadDefinition.getPropertyValues().addPropertyValues(getDbPropertiesMap()));
 
         context.registerBean(ProgrammaticPostgresConnector.class, new RuntimeBeanReference("dataSource"));
 
         context.refresh();
 
         return context.getBean(ProgrammaticPostgresConnector.class);
+    }
+
+    private Map<String, Object> getDbPropertiesMap() {
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("serverNames", "${db.serverName}");
+        properties.put("databaseName", "${db.databaseName}");
+        properties.put("portNumbers", "${db.port}");
+        properties.put("user", "${db.username}");
+        properties.put("password", "${db.password}");
+        return properties;
     }
 }
